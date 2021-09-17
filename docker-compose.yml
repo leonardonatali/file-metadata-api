@@ -1,0 +1,33 @@
+version: "3.8"
+services:
+  api:
+    build: .
+    env_file: .env
+    volumes:
+      - $PWD/pkg:/app/pkg
+      - $PWD/go.mod:/app/go.mod
+    depends_on: 
+      - database
+    ports:
+      - "8088:80"
+    networks:
+      - file-metadata-api
+
+  database:
+    image: mongo:4.2.16
+    env_file: .env
+    logging:
+      driver: none
+    volumes: 
+      - db-data:/data/db
+    ports:
+      - "27018:27017"
+    networks:
+      - file-metadata-api
+
+volumes: 
+  db-data:
+
+networks:
+  file-metadata-api:
+

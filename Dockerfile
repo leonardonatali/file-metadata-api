@@ -8,4 +8,6 @@ RUN go get github.com/oxequa/realize
 
 COPY . /app/
 
+EXPOSE 80
+
 CMD [ "realize", "start" ]

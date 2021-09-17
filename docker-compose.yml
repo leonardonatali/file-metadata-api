@@ -5,6 +5,7 @@ services:
     env_file: .env
     volumes:
       - $PWD/pkg:/app/pkg
+      - $PWD/cmd:/app/cmd
       - $PWD/go.mod:/app/go.mod
     depends_on: 
       - database
@@ -12,6 +13,7 @@ services:
       - "8088:80"
     networks:
       - file-metadata-api
+    command: ["realize", "start"]
 
   database:
     image: mongo:4.2.16

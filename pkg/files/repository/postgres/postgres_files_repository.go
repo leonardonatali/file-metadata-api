@@ -1,6 +1,9 @@
 package postgres
 
 import (
+	"fmt"
+	"strings"
+
 	"github.com/leonardonatali/file-metadata-api/pkg/files/entities"
 	"gorm.io/gorm"
 )
@@ -21,8 +24,31 @@ func (r *PostgresFilesRepository) CreateFile(file *entities.File) error {
 
 func (r *PostgresFilesRepository) GetAllFiles(userID uint64, path string) ([]*entities.File, error) {
 	files := []*entities.File{}
-	query := r.db.Where("user_id = ?", userID).Find(&files)
+
+	path = strings.TrimPrefix(path, "/")
+	path = strings.TrimSuffix(path, "/")
+
+	query := r.db.Where("user_id = ?", userID)
+
+	if path != "" {
+		path = fmt.Sprintf("/%s/", path)
+		query = query.Where("path LIKE('?%')", path)
+	}
+
+	query.Find(&files)
 	return files, query.Error
+}
+
+func (r *PostgresFilesRepository) GetFile(fileID uint64) (*entities.File, error) {
+	file := entities.File{
+		ID: fileID,
+	}
+
+	if err := r.db.Find(&file).Error; err != nil {
+		return nil, err
+	}
+
+	return &file, nil
 }
 
 func (r *PostgresFilesRepository) GetFileMetadata(fileID uint64) ([]*entities.FileMetadata, error) {

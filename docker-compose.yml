@@ -16,6 +16,7 @@ services:
     command: ["realize", "start"]
 
   database:
+    user: ${UID}:${UID}
     image: postgres:13-alpine
     env_file: .env
     logging:

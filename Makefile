@@ -1,3 +1,3 @@
 
-default:
-	@docker-compose up --build
+default: 
+	@export UID=$(UID); docker-compose up --build

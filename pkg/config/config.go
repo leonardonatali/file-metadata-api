@@ -12,6 +12,6 @@ type Config struct {
 	DBPassword string `envconfig:"db_password" default:"root"`
 }
 
-func (c *Config) Load() {
-	envconfig.Process("", c)
+func (c *Config) Load() error {
+	return envconfig.Process("", c)
 }

@@ -1,6 +1,6 @@
 package dto
 
 type GetFilesDto struct {
-	Token string
-	Path  string
+	UserID uint64
+	Path   string
 }

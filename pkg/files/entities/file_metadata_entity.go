@@ -1,6 +1,7 @@
 package entities
 
 type FileMetadata struct {
-	Key   string
-	Value string
+	FileID uint64
+	Key    string
+	Value  string
 }

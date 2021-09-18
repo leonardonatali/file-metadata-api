@@ -9,7 +9,7 @@ type File struct {
 	Path        string
 	Extension   string
 	SizeInBytes uint64
-	Metadata    []FileMetadata
+	Metadata    []*FileMetadata
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
 }

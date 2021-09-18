@@ -1,5 +1,5 @@
 schema:
-  - name: file-metadata-api-server
+  - name: server
     path: /app
     commands:
       build:
@@ -8,10 +8,12 @@ schema:
         args:
           - -o bin/file-metadata-api-server
           - -mod=vendor
-          - cmd/main.go
+          - main.go
       run:
         status: true
         method: bin/file-metadata-api-server
+    args:
+      - serve
     watcher:
       paths:
         - /
@@ -20,6 +22,6 @@ schema:
         - vendor
       extensions:
         - go
-      scripts:
-        - type: before
-          command: go mod tidy
+#      scripts:
+#        - type: before
+#          command: go mod tidy

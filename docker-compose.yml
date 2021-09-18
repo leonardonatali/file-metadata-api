@@ -16,19 +16,16 @@ services:
     command: ["realize", "start"]
 
   database:
-    image: mongo:4.2.16
+    image: postgres:13-alpine
     env_file: .env
     logging:
       driver: none
     volumes: 
-      - db-data:/data/db
+      - $PWD/database/data:/var/lib/postgresql/data
     ports:
-      - "27018:27017"
+      - "5433:5432"
     networks:
       - file-metadata-api
-
-volumes: 
-  db-data:
 
 networks:
   file-metadata-api:

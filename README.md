@@ -7,12 +7,12 @@ Requisitos funcionais:
 - Permitir o upload de um arquivo (blob) com o metadado do caminho (Exemplo:
 arquivo `report.pdf` com o caminho `/hr/monthly`);
 - Permitir download do arquivo;
+- Deletar arquivo por ID;
+- Sobrescrever arquivo por ID.
+- Mudar caminho do arquivo por ID;
 - Listar arquivos disponíveis com seus metadados;
 - Listar arquivos abaixo de um caminho com seus metadados;
 - Ler metadados de um arquivo via ID;
-- Mudar caminho do arquivo por ID;
-- Deletar arquivo por ID;
-- Sobrescrever arquivo por ID.
 > Nesta especificação, um arquivo trata-se de qualquer blob e metadados contém o nome,
 caminho, tipo de arquivo, data de criação, data de atualização e tamanho.
 

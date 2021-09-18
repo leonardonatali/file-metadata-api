@@ -1,11 +1,19 @@
 package server
 
-type Server struct{}
+import "github.com/leonardonatali/file-metadata-api/pkg/config"
 
-func NewServer() *Server {
-	return &Server{}
+type Server struct {
+	cfg *config.Config
+}
+
+func NewServer(cfg *config.Config) *Server {
+	return &Server{
+		cfg: cfg,
+	}
 }
 
 func (s *Server) Run() {
-
+	//Create controllers
+	//Register Routes
+	//Run server
 }

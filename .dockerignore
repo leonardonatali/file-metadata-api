@@ -1,0 +1,8 @@
+bin
+database
+.gitignore
+Makefile
+README.md
+docker-compose.yml
+Dockerfile
+.dockerignore

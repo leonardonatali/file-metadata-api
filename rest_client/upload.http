@@ -1,0 +1,14 @@
+POST http://localhost:8088/files/upload
+token: 456
+Content-Type: multipart/form-data; boundary=--form-boundary
+
+----form-boundary
+Content-Disposition: form-data; name="path"
+
+path/of/file
+----form-boundary
+Content-Disposition: form-data; name="file"; filename="teste.png"
+Content-Type: image/png
+
+< /home/leo/pictures/alien.png
+----form-boundary--

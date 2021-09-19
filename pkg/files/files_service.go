@@ -22,15 +22,13 @@ func NewFilesService(filesRepository repository.FilesRepository) *FilesService {
 func (s *FilesService) CreateFile(dto *dto.CreateFileDto) error {
 
 	file := &entities.File{
-		ID:          0,
-		UserID:      dto.UserID,
-		Name:        dto.Name,
-		Path:        dto.Path,
-		Extension:   dto.Extension,
-		SizeInBytes: dto.SizeInBytes,
-		Metadata:    parseMetadata(dto.Metadata),
-		CreatedAt:   time.Now(),
-		UpdatedAt:   time.Now(),
+		ID:        0,
+		UserID:    dto.UserID,
+		Name:      dto.Name,
+		Path:      dto.Path,
+		Metadata:  parseMetadata(dto.Metadata),
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
 	}
 
 	return s.filesRepository.CreateFile(file)
@@ -47,13 +45,11 @@ func (s *FilesService) GetFileMetadata(dto *dto.GetMetadataDto) ([]*entities.Fil
 func (s *FilesService) ReplaceFile(dto *dto.ReplaceFileDto) error {
 
 	newFile := &entities.File{
-		ID:          0,
-		UserID:      dto.UserID,
-		Name:        dto.Name,
-		Path:        dto.Path,
-		Extension:   dto.Extension,
-		SizeInBytes: dto.SizeInBytes,
-		Metadata:    parseMetadata(dto.Metadata),
+		ID:       0,
+		UserID:   dto.UserID,
+		Name:     dto.Name,
+		Path:     dto.Path,
+		Metadata: parseMetadata(dto.Metadata),
 	}
 
 	oldFile, err := s.filesRepository.GetFile(dto.OldFileID)

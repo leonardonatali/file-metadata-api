@@ -38,7 +38,7 @@ func (s *FilesService) GetAllFiles(dto *dto.GetFilesDto) ([]*entities.File, erro
 	return s.filesRepository.GetAllFiles(dto.UserID, dto.Path)
 }
 
-func (s *FilesService) GetFileMetadata(dto *dto.GetMetadataDto) ([]*entities.FileMetadata, error) {
+func (s *FilesService) GetFileMetadata(dto *dto.GetMetadataDto) ([]*entities.FilesMetadata, error) {
 	return s.filesRepository.GetFileMetadata(dto.FileID)
 }
 
@@ -64,11 +64,11 @@ func (s *FilesService) ReplaceFile(dto *dto.ReplaceFileDto) error {
 	return nil
 }
 
-func parseMetadata(content map[string]string) []*entities.FileMetadata {
-	metadata := []*entities.FileMetadata{}
+func parseMetadata(content map[string]string) []*entities.FilesMetadata {
+	metadata := []*entities.FilesMetadata{}
 
 	for key, value := range content {
-		metadata = append(metadata, &entities.FileMetadata{
+		metadata = append(metadata, &entities.FilesMetadata{
 			Key:   key,
 			Value: value,
 		})

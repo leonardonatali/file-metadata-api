@@ -51,8 +51,8 @@ func (r *PostgresFilesRepository) GetFile(fileID uint64) (*entities.File, error)
 	return &file, nil
 }
 
-func (r *PostgresFilesRepository) GetFileMetadata(fileID uint64) ([]*entities.FileMetadata, error) {
-	metadata := []*entities.FileMetadata{}
+func (r *PostgresFilesRepository) GetFileMetadata(fileID uint64) ([]*entities.FilesMetadata, error) {
+	metadata := []*entities.FilesMetadata{}
 	query := r.db.Where("file_id = ?", fileID).Find(&metadata)
 	return metadata, query.Error
 }

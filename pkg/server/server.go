@@ -9,11 +9,15 @@ import (
 	"github.com/leonardonatali/file-metadata-api/pkg/auth/middlewares"
 	"github.com/leonardonatali/file-metadata-api/pkg/config"
 	"github.com/leonardonatali/file-metadata-api/pkg/database/migrations"
+	"github.com/leonardonatali/file-metadata-api/pkg/users"
+	"github.com/leonardonatali/file-metadata-api/pkg/users/repository/postgres"
+	"gorm.io/gorm"
 )
 
 type Server struct {
 	cfg    *config.Config
 	router *gin.Engine
+	db     *gorm.DB
 }
 
 func NewServer(cfg *config.Config) *Server {
@@ -23,6 +27,7 @@ func NewServer(cfg *config.Config) *Server {
 	return &Server{
 		cfg:    cfg,
 		router: router,
+		db:     cfg.GetDBConn(),
 	}
 }
 
@@ -37,8 +42,10 @@ func (s *Server) Migrate() {
 }
 
 func (s *Server) RegisterRoutes() {
+	usersService := users.NewUsersService(postgres.NewPostgresUsersRepository(s.db))
+
 	root := s.router.Group("/")
-	root.Use(middlewares.AuthMiddleware)
+	root.Use(middlewares.GetAuthMiddleware(usersService))
 
 	root.GET("/ok", func(c *gin.Context) {
 		c.String(http.StatusOK, ":)")

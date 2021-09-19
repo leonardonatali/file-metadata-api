@@ -1,4 +1,4 @@
-package files
+package users
 
 import (
 	"github.com/leonardonatali/file-metadata-api/pkg/users/dto"
@@ -10,13 +10,13 @@ type UsersService struct {
 	usersRepository repository.UsersRepository
 }
 
-func NewFilesService(usersRepository repository.UsersRepository) *UsersService {
+func NewUsersService(usersRepository repository.UsersRepository) *UsersService {
 	return &UsersService{
 		usersRepository: usersRepository,
 	}
 }
 
-func (s *UsersService) CreateUser(dto *dto.CreateUserDto) error {
+func (s *UsersService) CreateUser(dto *dto.CreateUserDto) (*entities.User, error) {
 	return s.usersRepository.CreateUser(&entities.User{
 		Token: dto.Token,
 	})

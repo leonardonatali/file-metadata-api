@@ -1,6 +1,6 @@
 
 default: 
-	@export UID=$(UID); docker-compose up --build
+	@docker-compose up --build
 
 migrations:
 	@go-bindata \

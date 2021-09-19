@@ -16,13 +16,12 @@ services:
     command: ["realize", "start"]
 
   database:
-    user: ${UID}:${UID}
     image: postgres:13-alpine
     env_file: .env
     logging:
       driver: none
     volumes: 
-      - $PWD/database/data:/var/lib/postgresql/data
+      - pgdata:/var/lib/postgresql/data
     ports:
       - "5433:5432"
     networks:
@@ -31,3 +30,5 @@ services:
 networks:
   file-metadata-api:
 
+volumes: 
+  pgdata:

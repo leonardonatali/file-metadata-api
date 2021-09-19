@@ -4,6 +4,9 @@ import (
 	"fmt"
 
 	"github.com/kelseyhightower/envconfig"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 type Config struct {
@@ -26,7 +29,18 @@ func (c *Config) GetDatabaseDSN(direct bool) string {
 	}
 
 	return fmt.Sprintf(
-		"host=%s user=%s password=%s dbname=%s port=%d sslmode=disable TimeZone=Ameriaca/Sao_Paulo",
+		"host=%s user=%s password=%s dbname=%s port=%d sslmode=disable TimeZone=America/Sao_Paulo",
 		c.DBHost, c.DBUser, c.DBPassword, c.DBName, c.DBPort,
 	)
+}
+
+func (c *Config) GetDBConn() *gorm.DB {
+	db, err := gorm.Open(postgres.Open(c.GetDatabaseDSN(false)), &gorm.Config{
+		Logger: logger.Default,
+	})
+	if err != nil {
+		panic(err)
+	}
+
+	return db
 }

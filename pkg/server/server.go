@@ -9,6 +9,7 @@ import (
 	"github.com/leonardonatali/file-metadata-api/pkg/auth/middlewares"
 	"github.com/leonardonatali/file-metadata-api/pkg/config"
 	"github.com/leonardonatali/file-metadata-api/pkg/database/migrations"
+	"github.com/leonardonatali/file-metadata-api/pkg/files"
 	"github.com/leonardonatali/file-metadata-api/pkg/users"
 	"github.com/leonardonatali/file-metadata-api/pkg/users/repository/postgres"
 	"gorm.io/gorm"
@@ -23,6 +24,9 @@ type Server struct {
 func NewServer(cfg *config.Config) *Server {
 	gin.SetMode(gin.ReleaseMode)
 	router := gin.Default()
+
+	//Define o tamanho máximo aceito pelo form em 10MB
+	router.MaxMultipartMemory = 10 * 1024 * 1024
 
 	return &Server{
 		cfg:    cfg,
@@ -43,6 +47,7 @@ func (s *Server) Migrate() {
 
 func (s *Server) RegisterRoutes() {
 	usersService := users.NewUsersService(postgres.NewPostgresUsersRepository(s.db))
+	filesController := files.NewFilesController(s.cfg, s.db)
 
 	root := s.router.Group("/")
 	root.Use(middlewares.GetAuthMiddleware(usersService))
@@ -50,6 +55,9 @@ func (s *Server) RegisterRoutes() {
 	root.GET("/ok", func(c *gin.Context) {
 		c.String(http.StatusOK, ":)")
 	})
+
+	filesGroup := root.Group("/files")
+	filesGroup.POST("/upload", filesController.UploadFile)
 }
 
 func (s *Server) listen() {

@@ -53,8 +53,6 @@ func GetAuthMiddleware(usersService *users.UsersService) func(c *gin.Context) {
 		//Adiciona o novo usuário ao contexto da request
 		ctx := context.WithValue(c.Request.Context(), auth.ContextUserKey, user)
 
-		log.Printf("%+v", user)
-
 		c.Request = c.Request.WithContext(ctx)
 		c.Next()
 	}

@@ -1,0 +1,10 @@
+create table files(
+    id BIGSERIAL NOT NULL,
+    user_id BIGINT NOT NULL,
+    name CHARACTER VARYING(255) NOT NULL,
+    path CHARACTER VARYING(2048) NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT now(),
+    updated_at TIMESTAMP NOT NULL DEFAULT now(),
+    CONSTRAINT files_pkey PRIMARY KEY (id),
+    CONSTRAINT users_fkey FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE ON UPDATE CASCADE
+);

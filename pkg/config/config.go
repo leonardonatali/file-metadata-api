@@ -12,7 +12,7 @@ import (
 type Config struct {
 	Port       int    `envconfig:"port" default:"80"`
 	DBPort     int    `envconfig:"db_port" default:"27018"`
-	DBHost     string `envconfig:"db_bhost" default:"database"`
+	DBHost     string `envconfig:"db_host" default:"database"`
 	DBUser     string `envconfig:"db_user" default:"root"`
 	DBName     string `envconfig:"db_name" default:"files"`
 	DBPassword string `envconfig:"db_password" default:"root"`

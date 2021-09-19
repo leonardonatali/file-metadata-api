@@ -5,7 +5,7 @@ import (
 	"log"
 
 	"github.com/leonardonatali/file-metadata-api/pkg/config"
-	"github.com/leonardonatali/file-metadata-api/pkg/database/migrations"
+	"github.com/leonardonatali/file-metadata-api/pkg/server"
 	"github.com/spf13/cobra"
 )
 
@@ -23,9 +23,8 @@ var serve = &cobra.Command{
 			log.Fatalf("cannot load app config: %s", err.Error())
 		}
 
-		if err := migrations.Migrate(&cfg); err != nil {
-			log.Fatalf("cannot run database migration: %s", err.Error())
-		}
+		srv := server.NewServer(&cfg)
+		srv.Run()
 
 		fmt.Println("servidor iniciando aqui...")
 	},

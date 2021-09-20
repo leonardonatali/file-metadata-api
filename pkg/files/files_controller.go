@@ -26,6 +26,19 @@ func NewFilesController(cfg *config.Config, db *gorm.DB) *FilesController {
 	}
 }
 
+func (c *FilesController) GetAllFiles(ctx *gin.Context) {
+	user := ctx.Request.Context().Value(auth.ContextUserKey).(*entities.User)
+
+	files, err := c.filesService.GetAllFiles(&dto.GetFilesDto{UserID: user.ID})
+	if err != nil {
+		log.Printf("cannot get files: %s", err.Error())
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "cannot get files"})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, files)
+}
+
 func (c *FilesController) UploadFile(ctx *gin.Context) {
 
 	var createFileDto dto.CreateFileDto

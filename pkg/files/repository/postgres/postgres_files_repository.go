@@ -35,7 +35,7 @@ func (r *PostgresFilesRepository) GetAllFiles(userID uint64, path string) ([]*en
 		query = query.Where("path LIKE('?%')", path)
 	}
 
-	query.Find(&files)
+	query.Preload("Metadata").Find(&files)
 	return files, query.Error
 }
 
@@ -51,7 +51,7 @@ func (r *PostgresFilesRepository) GetFile(fileID, userID uint64) (*entities.File
 		query = query.Where("user_id = ?", userID)
 	}
 
-	if err := query.First(&file).Error; err != nil {
+	if err := query.Preload("Metadata").First(&file).Error; err != nil {
 		return nil, err
 	}
 

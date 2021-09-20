@@ -135,5 +135,44 @@ func (c *FilesController) UpdatePath(ctx *gin.Context) {
 		ctx.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": "cannot change file path"})
 		return
 	}
+}
 
+func (c *FilesController) UpdateFile(ctx *gin.Context) {
+	//Validate input
+	_, err := ctx.MultipartForm()
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusUnprocessableEntity, gin.H{"error": "the request input must be multipart/form"})
+		return
+	}
+
+	updateFileDto := &dto.UpdateFileDto{}
+
+	if err := ctx.ShouldBind(updateFileDto); err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	fileId, err := strconv.ParseUint(ctx.Param("id"), 10, 64)
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "file id is required"})
+		return
+	}
+
+	user := ctx.Request.Context().Value(auth.ContextUserKey).(*entities.User)
+
+	file, err := c.filesService.GetFile(fileId, user.ID)
+	if err != nil || file == nil {
+		ctx.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": "file not found"})
+		return
+	}
+
+	//Extract metadata from file
+	updateFileDto.Metadata = dto.GetMetadata(updateFileDto.File, file.Path)
+	updateFileDto.OldFileID = file.ID
+	updateFileDto.UserID = user.ID
+
+	if err := c.filesService.UpdateFile(updateFileDto); err != nil {
+		log.Printf("cannot replace file: %s", err.Error())
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "cannot replace file"})
+	}
 }

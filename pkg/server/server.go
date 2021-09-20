@@ -61,7 +61,7 @@ func (s *Server) RegisterRoutes() {
 	files.GET("/:id/download", filesController.DownloadFile)
 	files.DELETE("/:id", filesController.DeleteFile)
 	files.PATCH("/:id", filesController.UpdatePath)
-	//files.PUT("/:id", filesController.UpdateFile)
+	files.PUT("/:id", filesController.UpdateFile)
 }
 
 func (s *Server) listen() {

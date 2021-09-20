@@ -46,6 +46,10 @@ func (s *FilesService) GetFileMetadata(dto *dto.GetMetadataDto) ([]*entities.Fil
 	return s.filesRepository.GetFileMetadata(dto.FileID)
 }
 
+func (s *FilesService) UpdateFile(dto *dto.UpdateFileDto) error {
+	return s.filesRepository.UpdateFile(dto.OldFileID, dto.Path, parseMetadata(dto.Metadata))
+}
+
 func (s *FilesService) UpdateFilePath(dto *dto.UpdateFilePathDto) error {
 	return s.filesRepository.UpdateFilePath(dto.FileID, dto.Path)
 }

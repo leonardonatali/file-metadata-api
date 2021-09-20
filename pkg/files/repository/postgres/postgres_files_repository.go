@@ -64,13 +64,41 @@ func (r *PostgresFilesRepository) GetFileMetadata(fileID uint64) ([]*entities.Fi
 	return metadata, query.Error
 }
 
-func (r *PostgresFilesRepository) UpdateFile(oldFile, newFile *entities.File) error {
-	newFile.ID = 0
-	return r.db.Model(oldFile).Updates(newFile).Error
+func (r *PostgresFilesRepository) UpdateFile(id uint64, path string, metadata []*entities.FilesMetadata) error {
+	for _, m := range metadata {
+		m.FileID = id
+	}
+
+	model := &entities.File{ID: id}
+
+	if err := r.db.
+		Where("file_id = ?", id).
+		Delete(&entities.FilesMetadata{}).
+		Error; err != nil {
+		return err
+	}
+
+	if err := r.db.
+		Create(metadata).
+		Error; err != nil {
+		return err
+	}
+
+	if err := r.db.
+		Model(model).
+		Updates(&entities.File{Path: path}).
+		Error; err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (r *PostgresFilesRepository) UpdateFilePath(fileID uint64, path string) error {
-	return r.db.Model(&entities.File{ID: fileID}).Update("path", path).Error
+	return r.db.
+		Model(&entities.File{ID: fileID}).
+		Update("path", path).
+		Error
 }
 
 func (r *PostgresFilesRepository) DeleteFile(userID, fileID uint64) error {

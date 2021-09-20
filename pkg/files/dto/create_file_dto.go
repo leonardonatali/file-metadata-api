@@ -49,7 +49,7 @@ func (dto *CreateFileDto) GetFilename() string {
 func (dto *CreateFileDto) LoadMetadata() {
 	dto.Metadata = map[string]string{}
 
-	dto.Metadata["file_name"] = dto.GetFilename()
+	dto.Metadata["filename"] = dto.GetFilename()
 	dto.Metadata["path"] = dto.Path
 	dto.Metadata["size"] = strconv.FormatInt(dto.File.Size, 10)
 	dto.Metadata["type"] = dto.GetFileMimeType()

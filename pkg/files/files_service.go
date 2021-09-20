@@ -19,7 +19,7 @@ func NewFilesService(filesRepository repository.FilesRepository) *FilesService {
 	}
 }
 
-func (s *FilesService) CreateFile(dto *dto.CreateFileDto) error {
+func (s *FilesService) CreateFile(dto *dto.CreateFileDto) (*entities.File, error) {
 
 	file := &entities.File{
 		ID:        0,
@@ -31,7 +31,8 @@ func (s *FilesService) CreateFile(dto *dto.CreateFileDto) error {
 		UpdatedAt: time.Now(),
 	}
 
-	return s.filesRepository.CreateFile(file)
+	err := s.filesRepository.CreateFile(file)
+	return file, err
 }
 
 func (s *FilesService) GetAllFiles(dto *dto.GetFilesDto) ([]*entities.File, error) {

@@ -47,11 +47,12 @@ func (c *FilesController) UploadFile(ctx *gin.Context) {
 	user := ctx.Request.Context().Value(auth.ContextUserKey).(*entities.User)
 	createFileDto.UserID = user.ID
 
-	if err := c.filesService.CreateFile(&createFileDto); err != nil {
+	result, err := c.filesService.CreateFile(&createFileDto)
+	if err != nil {
 		log.Printf("cannot store the file: %s", err.Error())
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "cannot save the file"})
 		return
 	}
 
-	ctx.Status(http.StatusCreated)
+	ctx.PureJSON(http.StatusCreated, result)
 }

@@ -1,2 +1,6 @@
 GET http://localhost:8088/files
 token: 123
+
+###
+GET http://localhost:8088/files?path=path/of/file
+token: 123

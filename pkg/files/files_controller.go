@@ -3,6 +3,7 @@ package files
 import (
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/leonardonatali/file-metadata-api/pkg/auth"
@@ -42,7 +43,7 @@ func (c *FilesController) UploadFile(ctx *gin.Context) {
 	}
 
 	//Extract metadata from file
-	createFileDto.LoadMetadata()
+	createFileDto.Metadata = dto.GetMetadata(createFileDto.File, createFileDto.Path)
 
 	user := ctx.Request.Context().Value(auth.ContextUserKey).(*entities.User)
 	createFileDto.UserID = user.ID
@@ -54,5 +55,85 @@ func (c *FilesController) UploadFile(ctx *gin.Context) {
 		return
 	}
 
+	//Put file in storage
 	ctx.PureJSON(http.StatusCreated, result)
+}
+
+func (c *FilesController) DownloadFile(ctx *gin.Context) {
+	fileId, err := strconv.ParseUint(ctx.Param("id"), 10, 64)
+	user := ctx.Request.Context().Value(auth.ContextUserKey).(*entities.User)
+
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "file id is required"})
+		return
+	}
+
+	file, err := c.filesService.GetFile(fileId, user.ID)
+	if err != nil || file == nil {
+		ctx.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": "file not found"})
+		return
+	}
+
+	// Get download URL from storage
+	ctx.SecureJSON(http.StatusOK, dto.DownloadFileDtoResponse{DownloadURL: file.Path})
+}
+
+func (c *FilesController) DeleteFile(ctx *gin.Context) {
+	user := ctx.Request.Context().Value(auth.ContextUserKey).(*entities.User)
+	fileId, err := strconv.ParseUint(ctx.Param("id"), 10, 64)
+
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "file id is required"})
+		return
+	}
+
+	file, err := c.filesService.GetFile(fileId, user.ID)
+	if err != nil || file == nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "file not found"})
+		return
+	}
+
+	if err := c.filesService.DeleteFile(&dto.DeleteFileDto{
+		UserID: user.ID,
+		FileID: file.ID,
+	}); err != nil {
+		log.Printf("error while deleting file: %s", err.Error())
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "cannot delete file"})
+		return
+	}
+
+	// Delete file from storage
+
+	ctx.Status(http.StatusOK)
+}
+
+func (c *FilesController) UpdatePath(ctx *gin.Context) {
+	fileId, err := strconv.ParseUint(ctx.Param("id"), 10, 64)
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "file id is required"})
+		return
+	}
+
+	updateFilePathDto := &dto.UpdateFilePathDto{}
+	if err := ctx.ShouldBind(updateFilePathDto); err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	user := ctx.Request.Context().Value(auth.ContextUserKey).(*entities.User)
+
+	file, err := c.filesService.GetFile(fileId, user.ID)
+	if err != nil || file == nil {
+		ctx.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": "file not found"})
+		return
+	}
+
+	updateFilePathDto.FileID = file.ID
+
+	if err := c.filesService.UpdateFilePath(updateFilePathDto); err != nil {
+		log.Printf("cannot change file path: %s", err.Error())
+		ctx.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": "cannot change file path"})
+		return
+	}
+
 }

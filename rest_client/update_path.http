@@ -1,0 +1,7 @@
+PATCH  http://localhost:8088/files/9
+token: 123
+Content-Type: application/json
+
+{
+    "path": "caminho/de/teste/2"
+}

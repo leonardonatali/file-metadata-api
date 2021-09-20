@@ -1,7 +1,6 @@
 package files
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/leonardonatali/file-metadata-api/pkg/files/dto"
@@ -35,6 +34,10 @@ func (s *FilesService) CreateFile(dto *dto.CreateFileDto) (*entities.File, error
 	return file, err
 }
 
+func (s *FilesService) GetFile(id, userID uint64) (*entities.File, error) {
+	return s.filesRepository.GetFile(id, userID)
+}
+
 func (s *FilesService) GetAllFiles(dto *dto.GetFilesDto) ([]*entities.File, error) {
 	return s.filesRepository.GetAllFiles(dto.UserID, dto.Path)
 }
@@ -43,26 +46,12 @@ func (s *FilesService) GetFileMetadata(dto *dto.GetMetadataDto) ([]*entities.Fil
 	return s.filesRepository.GetFileMetadata(dto.FileID)
 }
 
-func (s *FilesService) ReplaceFile(dto *dto.ReplaceFileDto) error {
+func (s *FilesService) UpdateFilePath(dto *dto.UpdateFilePathDto) error {
+	return s.filesRepository.UpdateFilePath(dto.FileID, dto.Path)
+}
 
-	newFile := &entities.File{
-		ID:       0,
-		UserID:   dto.UserID,
-		Name:     dto.Name,
-		Path:     dto.Path,
-		Metadata: parseMetadata(dto.Metadata),
-	}
-
-	oldFile, err := s.filesRepository.GetFile(dto.OldFileID)
-	if err != nil || oldFile == nil {
-		return fmt.Errorf("cannot find the old file to be replaced")
-	}
-
-	if err := s.filesRepository.ReplaceFile(oldFile, newFile); err != nil {
-		return fmt.Errorf("error while replacing file")
-	}
-
-	return nil
+func (s *FilesService) DeleteFile(dto *dto.DeleteFileDto) error {
+	return s.filesRepository.DeleteFile(dto.UserID, dto.FileID)
 }
 
 func parseMetadata(content map[string]string) []*entities.FilesMetadata {

@@ -1,6 +1,6 @@
 package dto
 
 type DeleteFileDto struct {
-	Token  string
+	UserID uint64
 	FileID uint64
 }

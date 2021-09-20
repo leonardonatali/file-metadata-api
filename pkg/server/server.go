@@ -56,8 +56,12 @@ func (s *Server) RegisterRoutes() {
 		c.String(http.StatusOK, ":)")
 	})
 
-	filesGroup := root.Group("/files")
-	filesGroup.POST("/upload", filesController.UploadFile)
+	files := root.Group("/files")
+	files.POST("/upload", filesController.UploadFile)
+	files.GET("/:id/download", filesController.DownloadFile)
+	files.DELETE("/:id", filesController.DeleteFile)
+	files.PATCH("/:id", filesController.UpdatePath)
+	//files.PUT("/:id", filesController.UpdateFile)
 }
 
 func (s *Server) listen() {

@@ -39,12 +39,19 @@ func (r *PostgresFilesRepository) GetAllFiles(userID uint64, path string) ([]*en
 	return files, query.Error
 }
 
-func (r *PostgresFilesRepository) GetFile(fileID uint64) (*entities.File, error) {
-	file := entities.File{
-		ID: fileID,
+func (r *PostgresFilesRepository) GetFile(fileID, userID uint64) (*entities.File, error) {
+	file := entities.File{}
+	query := r.db
+
+	if fileID > 0 {
+		query = query.Where("id = ?", fileID)
 	}
 
-	if err := r.db.Find(&file).Error; err != nil {
+	if userID > 0 {
+		query = query.Where("user_id = ?", userID)
+	}
+
+	if err := query.First(&file).Error; err != nil {
 		return nil, err
 	}
 
@@ -57,7 +64,18 @@ func (r *PostgresFilesRepository) GetFileMetadata(fileID uint64) ([]*entities.Fi
 	return metadata, query.Error
 }
 
-func (r *PostgresFilesRepository) ReplaceFile(oldFile, newFile *entities.File) error {
+func (r *PostgresFilesRepository) UpdateFile(oldFile, newFile *entities.File) error {
 	newFile.ID = 0
 	return r.db.Model(oldFile).Updates(newFile).Error
+}
+
+func (r *PostgresFilesRepository) UpdateFilePath(fileID uint64, path string) error {
+	return r.db.Model(&entities.File{ID: fileID}).Update("path", path).Error
+}
+
+func (r *PostgresFilesRepository) DeleteFile(userID, fileID uint64) error {
+	return r.db.Model(&entities.File{}).Delete(&entities.File{
+		ID:     fileID,
+		UserID: userID,
+	}).Error
 }

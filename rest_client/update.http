@@ -1,0 +1,14 @@
+PUT http://localhost:8088/files/9
+token: 123
+Content-Type: multipart/form-data; boundary=--form-boundary
+
+----form-boundary
+Content-Disposition: form-data; name="Path"
+
+path/of/file/update/full
+----form-boundary
+Content-Disposition: form-data; name="File"; filename="profile.jpg"
+Content-Type: image/jpeg
+
+< /home/leo/pictures/profile.jpg
+----form-boundary--

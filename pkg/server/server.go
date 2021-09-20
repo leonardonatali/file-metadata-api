@@ -59,6 +59,7 @@ func (s *Server) RegisterRoutes() {
 	files := root.Group("/files")
 	files.POST("/upload", filesController.UploadFile)
 	files.GET("/:id/download", filesController.DownloadFile)
+	files.GET("/:id/metadata", filesController.GetFileMetadata)
 	files.DELETE("/:id", filesController.DeleteFile)
 	files.PATCH("/:id", filesController.UpdatePath)
 	files.PUT("/:id", filesController.UpdateFile)

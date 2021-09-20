@@ -45,6 +45,33 @@ func (c *FilesController) GetAllFiles(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, files)
 }
 
+func (c *FilesController) GetFileMetadata(ctx *gin.Context) {
+	var req dto.GetMetadataDto
+	var err error
+
+	req.FileID, err = strconv.ParseUint(ctx.Param("id"), 10, 64)
+
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	user := ctx.Request.Context().Value(auth.ContextUserKey).(*entities.User)
+	file, err := c.filesService.GetFile(req.FileID, user.ID)
+	if err != nil || file == nil {
+		if err != nil {
+			log.Printf("cannot get file metadata: %s", err.Error())
+			ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
+		ctx.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": "file not found"})
+		return
+	}
+
+	ctx.PureJSON(http.StatusOK, file.Metadata)
+}
+
 func (c *FilesController) UploadFile(ctx *gin.Context) {
 
 	var createFileDto dto.CreateFileDto

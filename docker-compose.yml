@@ -27,8 +27,22 @@ services:
     networks:
       - file-metadata-api
 
+  minio:
+    image: minio/minio:RELEASE.2021-09-18T18-09-59Z
+    logging: 
+      driver: none
+    volumes: 
+      - minio-data:/data
+    ports: 
+      - 9000:9000
+      - 9001:9001
+    networks:
+      - file-metadata-api
+    command: ["server", "/data", "--console-address", ":9001"]
+
 networks:
   file-metadata-api:
 
 volumes: 
   pgdata:
+  minio-data:

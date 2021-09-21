@@ -1,29 +1,34 @@
 package files
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/leonardonatali/file-metadata-api/pkg/auth"
 	"github.com/leonardonatali/file-metadata-api/pkg/config"
 	"github.com/leonardonatali/file-metadata-api/pkg/files/dto"
 	"github.com/leonardonatali/file-metadata-api/pkg/files/repository/postgres"
+	"github.com/leonardonatali/file-metadata-api/pkg/storage"
 	"github.com/leonardonatali/file-metadata-api/pkg/users/entities"
 	"gorm.io/gorm"
 )
 
 type FilesController struct {
-	cfg          *config.Config
-	filesService *FilesService
+	cfg            *config.Config
+	filesService   *FilesService
+	storageService storage.StorageService
 }
 
-func NewFilesController(cfg *config.Config, db *gorm.DB) *FilesController {
+func NewFilesController(cfg *config.Config, db *gorm.DB, storageService storage.StorageService) *FilesController {
 	return &FilesController{
-		cfg:          &config.Config{},
-		filesService: NewFilesService(postgres.NewPostgresFilesRepository(db)),
+		cfg:            &config.Config{},
+		filesService:   NewFilesService(postgres.NewPostgresFilesRepository(db)),
+		storageService: storageService,
 	}
 }
 
@@ -121,8 +126,20 @@ func (c *FilesController) DownloadFile(ctx *gin.Context) {
 		return
 	}
 
-	// Get download URL from storage
-	ctx.SecureJSON(http.StatusOK, dto.DownloadFileDtoResponse{DownloadURL: file.Path})
+	url, err := c.storageService.GetDownloadURL(
+		fmt.Sprintf("%s/%s", strings.TrimSuffix(file.Path, "/"), file.Name),
+		file.Name,
+		file.GetMetadataByKey("type").Value,
+		time.Hour,
+	)
+
+	if err != nil || file == nil {
+		log.Printf("cannot get download URL: %s", err.Error())
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "cannot get download URL"})
+		return
+	}
+
+	ctx.SecureJSON(http.StatusOK, dto.DownloadFileDtoResponse{DownloadURL: url})
 }
 
 func (c *FilesController) DeleteFile(ctx *gin.Context) {

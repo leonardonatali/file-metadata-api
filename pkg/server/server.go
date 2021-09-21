@@ -10,28 +10,37 @@ import (
 	"github.com/leonardonatali/file-metadata-api/pkg/config"
 	"github.com/leonardonatali/file-metadata-api/pkg/database/migrations"
 	"github.com/leonardonatali/file-metadata-api/pkg/files"
+	"github.com/leonardonatali/file-metadata-api/pkg/storage"
+	minio "github.com/leonardonatali/file-metadata-api/pkg/storage/storage_minio"
 	"github.com/leonardonatali/file-metadata-api/pkg/users"
 	"github.com/leonardonatali/file-metadata-api/pkg/users/repository/postgres"
 	"gorm.io/gorm"
 )
 
 type Server struct {
-	cfg    *config.Config
-	router *gin.Engine
-	db     *gorm.DB
+	cfg        *config.Config
+	storage    storage.StorageService
+	storageCfg *storage.StorageConfig
+	router     *gin.Engine
+	db         *gorm.DB
 }
 
-func NewServer(cfg *config.Config) *Server {
+func NewServer(cfg *config.Config, storageCfg *storage.StorageConfig) *Server {
 	gin.SetMode(gin.ReleaseMode)
 	router := gin.Default()
 
 	//Define o tamanho máximo aceito pelo form em 10MB
 	router.MaxMultipartMemory = 10 * 1024 * 1024
 
+	//Carrega a configuração do storage
+	minioService := minio.MinioService{}
+
 	return &Server{
-		cfg:    cfg,
-		router: router,
-		db:     cfg.GetDBConn(),
+		cfg:        cfg,
+		storage:    &minioService,
+		storageCfg: storageCfg,
+		router:     router,
+		db:         cfg.GetDBConn(),
 	}
 }
 
@@ -46,8 +55,24 @@ func (s *Server) Migrate() {
 }
 
 func (s *Server) RegisterRoutes() {
+
+	if err := s.storage.Load(s.storageCfg); err != nil {
+		log.Fatalf("cannot load storage config: %s", err.Error())
+	}
+
+	exists, err := s.storage.BucketExists()
+	if err != nil {
+		log.Fatalf("cannot check if storage exists: %s", err.Error())
+	}
+
+	if !exists {
+		if err := s.storage.CreateBucket(); err != nil {
+			log.Fatalf("cannot check if storage exists: %s", err.Error())
+		}
+	}
+
 	usersService := users.NewUsersService(postgres.NewPostgresUsersRepository(s.db))
-	filesController := files.NewFilesController(s.cfg, s.db)
+	filesController := files.NewFilesController(s.cfg, s.db, s.storage)
 
 	root := s.router.Group("/")
 	root.Use(middlewares.GetAuthMiddleware(usersService))

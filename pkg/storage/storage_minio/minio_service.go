@@ -1,4 +1,4 @@
-package storageminio
+package storage_minio
 
 import (
 	"context"
@@ -37,7 +37,7 @@ func (m *MinioService) BucketExists() (bool, error) {
 	return m.client.BucketExists(context.Background(), m.cfg.BucketName)
 }
 
-func (m *MinioService) CreateBucket(name string) error {
+func (m *MinioService) CreateBucket() error {
 	return m.client.MakeBucket(
 		context.Background(),
 		m.cfg.BucketName,

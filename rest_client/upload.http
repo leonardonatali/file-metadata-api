@@ -3,11 +3,11 @@ token: 123
 Content-Type: multipart/form-data; boundary=--form-boundary
 
 ----form-boundary
-Content-Disposition: form-data; name="path"
+Content-Disposition: form-data; name="Path"
 
 path/of/file
 ----form-boundary
-Content-Disposition: form-data; name="file"; filename="teste.png"
+Content-Disposition: form-data; name="File"; filename="teste.png"
 Content-Type: image/png
 
 < /home/leo/pictures/alien.png

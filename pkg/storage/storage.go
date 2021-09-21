@@ -1,6 +1,9 @@
 package storage
 
-import "io"
+import (
+	"io"
+	"time"
+)
 
 type StorageService interface {
 	Load(cfg *StorageConfig) error
@@ -8,5 +11,5 @@ type StorageService interface {
 	CreateBucket(name string) error
 	PutFile(content io.Reader, path, mimeType string, size uint64) error
 	DeleteFile(path string) error
-	GetDownloadURL() (string, error)
+	GetDownloadURL(path, filename, mimeType string, expires time.Duration) (string, error)
 }

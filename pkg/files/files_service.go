@@ -1,6 +1,8 @@
 package files
 
 import (
+	"sort"
+	"strings"
 	"time"
 
 	"github.com/leonardonatali/file-metadata-api/pkg/files/dto"
@@ -69,4 +71,28 @@ func parseMetadata(content map[string]string) []*entities.FilesMetadata {
 	}
 
 	return metadata
+}
+
+func (s *FilesService) GetAllPaths(userID uint64) ([]string, error) {
+	metadata, err := s.filesRepository.GetAllMetadata(userID)
+	if err != nil {
+		return nil, err
+	}
+
+	return getAllPaths(metadata), nil
+}
+
+func getAllPaths(metadata []*entities.FilesMetadata) []string {
+	result := []string{}
+	for _, m := range metadata {
+		if m.Key == "path" {
+			result = append(result, m.Value)
+		}
+	}
+
+	sort.SliceStable(result, func(i, j int) bool {
+		return strings.Compare(result[i], result[j]) == -1
+	})
+
+	return result
 }

@@ -100,3 +100,17 @@ func (r *PostgresFilesRepository) DeleteFile(userID, fileID uint64) error {
 		UserID: userID,
 	}).Error
 }
+
+func (r *PostgresFilesRepository) GetAllMetadata(userID uint64) ([]*entities.FilesMetadata, error) {
+	out := []*entities.FilesMetadata{}
+
+	err := r.db.Where("file_id in(?)",
+		r.db.Table("files").
+			Select("id").
+			Where("user_id = ?", userID),
+	).
+		Find(&out).
+		Error
+
+	return out, err
+}

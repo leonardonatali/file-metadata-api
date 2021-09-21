@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/leonardonatali/file-metadata-api/pkg/auth"
@@ -221,4 +222,58 @@ func (c *FilesController) UpdateFile(ctx *gin.Context) {
 		log.Printf("cannot replace file: %s", err.Error())
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "cannot replace file"})
 	}
+}
+
+func (c *FilesController) GetFileTree(ctx *gin.Context) {
+	user := ctx.Request.Context().Value(auth.ContextUserKey).(*entities.User)
+
+	paths, _ := c.filesService.GetAllPaths(user.ID)
+	paths = getUniques(paths)
+
+	response := []dto.GetFileTreeDto{}
+	for i := range paths {
+		response = addToTree(response, strings.Split(paths[i], "/"))
+	}
+	ctx.PureJSON(200, response)
+}
+
+func getUniques(items []string) []string {
+	uniques := []string{}
+
+	for _, item := range items {
+		exists := false
+		for _, unique := range uniques {
+			if item == unique {
+				exists = true
+				break
+			}
+		}
+		if !exists {
+			uniques = append(uniques, item)
+		}
+	}
+
+	return uniques
+}
+
+func addToTree(root []dto.GetFileTreeDto, names []string) []dto.GetFileTreeDto {
+	if len(names) > 0 {
+		var i int
+
+		//Verifica se  já não existe um nó filho com o mesmo nome
+		for i = 0; i < len(root); i++ {
+			if root[i].CurrentDir == names[0] {
+				break
+			}
+		}
+
+		// Caso não exista, adiciona a lista do nó raiz, o novo nó
+		if i == len(root) {
+			root = append(root, dto.GetFileTreeDto{CurrentDir: names[0]})
+		}
+
+		// Chama recursivamente sempre avançando o início da lista
+		root[i].Children = addToTree(root[i].Children, names[1:])
+	}
+	return root
 }

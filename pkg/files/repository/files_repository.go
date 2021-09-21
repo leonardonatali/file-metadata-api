@@ -10,4 +10,5 @@ type FilesRepository interface {
 	UpdateFile(id uint64, path string, metadata []*entities.FilesMetadata) error
 	UpdateFilePath(fileID uint64, path string) error
 	DeleteFile(userID, fileID uint64) error
+	GetAllMetadata(userID uint64) ([]*entities.FilesMetadata, error)
 }

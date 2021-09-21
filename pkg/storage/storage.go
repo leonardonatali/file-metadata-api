@@ -2,7 +2,7 @@ package storage
 
 import "io"
 
-type StorageStrategy interface {
+type StorageService interface {
 	Load(cfg *StorageConfig) error
 	BucketExists() (bool, error)
 	CreateBucket(name string) error

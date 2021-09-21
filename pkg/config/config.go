@@ -2,6 +2,9 @@ package config
 
 import (
 	"fmt"
+	"log"
+	"os"
+	"time"
 
 	"github.com/kelseyhightower/envconfig"
 	"gorm.io/driver/postgres"
@@ -36,8 +39,17 @@ func (c *Config) GetDatabaseDSN(direct bool) string {
 
 func (c *Config) GetDBConn() *gorm.DB {
 	db, err := gorm.Open(postgres.Open(c.GetDatabaseDSN(false)), &gorm.Config{
-		Logger: logger.Default,
+		Logger: logger.New(
+			log.New(os.Stdout, "\r\n", log.LstdFlags),
+			logger.Config{
+				SlowThreshold:             time.Second,
+				LogLevel:                  logger.Info,
+				IgnoreRecordNotFoundError: false,
+				Colorful:                  true,
+			},
+		),
 	})
+
 	if err != nil {
 		panic(err)
 	}

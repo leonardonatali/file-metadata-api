@@ -1,8 +1,12 @@
 package storage
 
+import "io"
+
 type StorageStrategy interface {
-	Load(cfg *StorageConfig)
+	Load(cfg *StorageConfig) error
 	BucketExists() (bool, error)
 	CreateBucket(name string) error
-	PutFile()
+	PutFile(content io.Reader, path, mimeType string, size uint64) error
+	DeleteFile(path string) error
+	GetDownloadURL() (string, error)
 }

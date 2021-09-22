@@ -28,7 +28,8 @@ services:
       - file-metadata-api
 
   minio:
-    image: minio/minio:RELEASE.2021-09-18T18-09-59Z
+    image: minio/minio
+    env_file: .env
     logging: 
       driver: none
     volumes: 
@@ -38,7 +39,7 @@ services:
       - 9001:9001
     networks:
       - file-metadata-api
-    command: ["server", "/data", "--console-address", ":9001"]
+    command: ["minio", "server", "/data", "--console-address", ":9001"]
 
 networks:
   file-metadata-api:

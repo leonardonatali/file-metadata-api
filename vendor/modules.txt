@@ -1,6 +1,41 @@
+# github.com/aws/aws-sdk-go v1.17.7
+## explicit
+github.com/aws/aws-sdk-go/aws
+github.com/aws/aws-sdk-go/aws/awserr
+github.com/aws/aws-sdk-go/aws/awsutil
+github.com/aws/aws-sdk-go/aws/client
+github.com/aws/aws-sdk-go/aws/client/metadata
+github.com/aws/aws-sdk-go/aws/corehandlers
+github.com/aws/aws-sdk-go/aws/credentials
+github.com/aws/aws-sdk-go/aws/credentials/ec2rolecreds
+github.com/aws/aws-sdk-go/aws/credentials/endpointcreds
+github.com/aws/aws-sdk-go/aws/credentials/processcreds
+github.com/aws/aws-sdk-go/aws/credentials/stscreds
+github.com/aws/aws-sdk-go/aws/csm
+github.com/aws/aws-sdk-go/aws/defaults
+github.com/aws/aws-sdk-go/aws/ec2metadata
+github.com/aws/aws-sdk-go/aws/endpoints
+github.com/aws/aws-sdk-go/aws/request
+github.com/aws/aws-sdk-go/aws/session
+github.com/aws/aws-sdk-go/aws/signer/v4
+github.com/aws/aws-sdk-go/internal/ini
+github.com/aws/aws-sdk-go/internal/s3err
+github.com/aws/aws-sdk-go/internal/sdkio
+github.com/aws/aws-sdk-go/internal/sdkrand
+github.com/aws/aws-sdk-go/internal/sdkuri
+github.com/aws/aws-sdk-go/internal/shareddefaults
+github.com/aws/aws-sdk-go/private/protocol
+github.com/aws/aws-sdk-go/private/protocol/eventstream
+github.com/aws/aws-sdk-go/private/protocol/eventstream/eventstreamapi
+github.com/aws/aws-sdk-go/private/protocol/query
+github.com/aws/aws-sdk-go/private/protocol/query/queryutil
+github.com/aws/aws-sdk-go/private/protocol/rest
+github.com/aws/aws-sdk-go/private/protocol/restxml
+github.com/aws/aws-sdk-go/private/protocol/xml/xmlutil
+github.com/aws/aws-sdk-go/service/s3
+github.com/aws/aws-sdk-go/service/sts
 # github.com/dustin/go-humanize v1.0.0
 ## explicit
-github.com/dustin/go-humanize
 # github.com/gin-contrib/sse v0.1.0
 ## explicit; go 1.12
 github.com/gin-contrib/sse
@@ -34,7 +69,6 @@ github.com/golang-migrate/migrate/v4/source/go_bindata
 github.com/golang/protobuf/proto
 # github.com/google/uuid v1.1.2
 ## explicit
-github.com/google/uuid
 # github.com/hashicorp/errwrap v1.1.0
 ## explicit
 github.com/hashicorp/errwrap
@@ -78,6 +112,9 @@ github.com/jinzhu/inflection
 # github.com/jinzhu/now v1.1.2
 ## explicit; go 1.12
 github.com/jinzhu/now
+# github.com/jmespath/go-jmespath v0.0.0-20180206201540-c2b33e8439af
+## explicit
+github.com/jmespath/go-jmespath
 # github.com/json-iterator/go v1.1.12
 ## explicit; go 1.12
 github.com/json-iterator/go
@@ -86,7 +123,6 @@ github.com/json-iterator/go
 github.com/kelseyhightower/envconfig
 # github.com/klauspost/cpuid v1.3.1
 ## explicit; go 1.12
-github.com/klauspost/cpuid
 # github.com/leodido/go-urn v1.2.1
 ## explicit; go 1.13
 github.com/leodido/go-urn
@@ -100,26 +136,12 @@ github.com/lib/pq/scram
 github.com/mattn/go-isatty
 # github.com/minio/md5-simd v1.1.0
 ## explicit; go 1.14
-github.com/minio/md5-simd
 # github.com/minio/minio-go/v7 v7.0.14
 ## explicit; go 1.14
-github.com/minio/minio-go/v7
-github.com/minio/minio-go/v7/pkg/credentials
-github.com/minio/minio-go/v7/pkg/encrypt
-github.com/minio/minio-go/v7/pkg/lifecycle
-github.com/minio/minio-go/v7/pkg/notification
-github.com/minio/minio-go/v7/pkg/replication
-github.com/minio/minio-go/v7/pkg/s3utils
-github.com/minio/minio-go/v7/pkg/set
-github.com/minio/minio-go/v7/pkg/signer
-github.com/minio/minio-go/v7/pkg/sse
-github.com/minio/minio-go/v7/pkg/tags
 # github.com/minio/sha256-simd v0.1.1
 ## explicit; go 1.12
-github.com/minio/sha256-simd
 # github.com/mitchellh/go-homedir v1.1.0
 ## explicit
-github.com/mitchellh/go-homedir
 # github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd
 ## explicit
 github.com/modern-go/concurrent
@@ -128,10 +150,8 @@ github.com/modern-go/concurrent
 github.com/modern-go/reflect2
 # github.com/rs/xid v1.2.1
 ## explicit
-github.com/rs/xid
 # github.com/sirupsen/logrus v1.8.1
 ## explicit; go 1.13
-github.com/sirupsen/logrus
 # github.com/spf13/cobra v1.2.1
 ## explicit; go 1.14
 github.com/spf13/cobra
@@ -143,21 +163,15 @@ github.com/spf13/pflag
 github.com/ugorji/go/codec
 # golang.org/x/crypto v0.0.0-20210915214749-c084706c2272
 ## explicit; go 1.17
-golang.org/x/crypto/argon2
-golang.org/x/crypto/blake2b
 golang.org/x/crypto/pbkdf2
 golang.org/x/crypto/sha3
 # golang.org/x/net v0.0.0-20210614182718-04defd469f4e
 ## explicit; go 1.17
-golang.org/x/net/http/httpguts
-golang.org/x/net/idna
-golang.org/x/net/publicsuffix
 # golang.org/x/sys v0.0.0-20210917161153-d61c044b1678
 ## explicit; go 1.17
 golang.org/x/sys/cpu
 golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/unix
-golang.org/x/sys/windows
 # golang.org/x/text v0.3.7
 ## explicit; go 1.17
 golang.org/x/text/cases
@@ -204,7 +218,6 @@ google.golang.org/protobuf/runtime/protoimpl
 google.golang.org/protobuf/types/descriptorpb
 # gopkg.in/ini.v1 v1.62.0
 ## explicit
-gopkg.in/ini.v1
 # gopkg.in/yaml.v2 v2.4.0
 ## explicit; go 1.15
 gopkg.in/yaml.v2

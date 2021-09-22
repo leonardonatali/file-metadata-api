@@ -3,7 +3,7 @@ module github.com/leonardonatali/file-metadata-api
 go 1.17
 
 require (
-	github.com/aws/aws-sdk-go v1.17.7
+	github.com/aws/aws-sdk-go v1.40.46
 	github.com/gin-gonic/gin v1.7.4
 	github.com/golang-migrate/migrate/v4 v4.14.1
 	github.com/kelseyhightower/envconfig v1.4.0
@@ -31,7 +31,7 @@ require (
 	github.com/jackc/pgx/v4 v4.13.0 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.2 // indirect
-	github.com/jmespath/go-jmespath v0.0.0-20180206201540-c2b33e8439af // indirect
+	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/leodido/go-urn v1.2.1 // indirect
 	github.com/lib/pq v1.10.3 // indirect

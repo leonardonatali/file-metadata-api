@@ -9,12 +9,14 @@ import (
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/leonardonatali/file-metadata-api/pkg/storage"
 )
 
 type S3Service struct {
-	client *s3.S3
-	cfg    *storage.StorageConfig
+	client   *s3.S3
+	uploader *s3manager.Uploader
+	cfg      *storage.StorageConfig
 }
 
 func (m *S3Service) Load(cfg *storage.StorageConfig) error {
@@ -24,7 +26,7 @@ func (m *S3Service) Load(cfg *storage.StorageConfig) error {
 		Endpoint:         aws.String(m.cfg.Endpoint),
 		DisableSSL:       aws.Bool(!m.cfg.UseSSL),
 		Region:           aws.String(m.cfg.BucketRegion),
-		Credentials:      credentials.NewStaticCredentials(m.cfg.AccessKeyId, m.cfg.AccessKeyId, m.cfg.SecretAccessKey),
+		Credentials:      credentials.NewEnvCredentials(),
 		S3ForcePathStyle: aws.Bool(true),
 	})
 
@@ -32,6 +34,7 @@ func (m *S3Service) Load(cfg *storage.StorageConfig) error {
 		return err
 	}
 
+	m.uploader = s3manager.NewUploader(sess)
 	m.client = s3.New(sess)
 	return nil
 }
@@ -63,14 +66,13 @@ func (m *S3Service) CreateBucket() error {
 }
 
 func (m *S3Service) PutFile(content io.Reader, path, mimeType string, size uint64) error {
-	_, err := m.client.PutObject(
-		&s3.PutObjectInput{
-			Bucket:             aws.String(m.cfg.BucketName),
-			Body:               aws.ReadSeekCloser(content),
-			ContentDisposition: aws.String(mimeType),
-			ContentLength:      aws.Int64(int64(size)),
-			Key:                aws.String(path),
-		})
+	_, err := m.uploader.Upload(&s3manager.UploadInput{
+		Body:               content,
+		Bucket:             aws.String(m.cfg.BucketName),
+		ContentDisposition: aws.String(mimeType),
+		Key:                aws.String(path),
+		ContentType:        aws.String(mimeType),
+	})
 
 	if err != nil {
 		return err
@@ -81,7 +83,7 @@ func (m *S3Service) PutFile(content io.Reader, path, mimeType string, size uint6
 
 func (m *S3Service) DeleteFile(path string) error {
 	_, err := m.client.DeleteObject(&s3.DeleteObjectInput{
-		Bucket:                    &m.cfg.BucketName,
+		Bucket:                    aws.String(m.cfg.BucketName),
 		BypassGovernanceRetention: aws.Bool(true),
 		Key:                       aws.String(path),
 	})
@@ -89,18 +91,31 @@ func (m *S3Service) DeleteFile(path string) error {
 	return err
 }
 
-func (m *S3Service) GetDownloadURL(path, filename, mimeType string, expires time.Duration) (string, error) {
-	res, err := m.client.GetObject(&s3.GetObjectInput{
-		Bucket:                     aws.String(m.cfg.BucketName),
-		Key:                        &filename,
-		ResponseContentDisposition: aws.String(fmt.Sprintf(`attachment; filename="%s"`, filename)),
-		ResponseContentType:        aws.String(mimeType),
-		ResponseExpires:            aws.Time(time.Now().Add(time.Hour)),
+func (m *S3Service) Move(src, dest string) error {
+	_, err := m.client.CopyObject(&s3.CopyObjectInput{
+		Bucket:     aws.String(m.cfg.BucketName),
+		CopySource: aws.String(m.cfg.BucketName + src),
+		Key:        aws.String(dest),
 	})
 
 	if err != nil {
-		return "", err
+		return fmt.Errorf("cannot copy source object: %s", err.Error())
 	}
 
-	return res.String(), nil
+	if err := m.DeleteFile(src); err != nil {
+		return fmt.Errorf("cannot delete source object: %s", err.Error())
+	}
+
+	return nil
+}
+
+func (m *S3Service) GetDownloadURL(path, filename, mimeType string, expires time.Duration) (string, error) {
+	req, _ := m.client.GetObjectRequest(&s3.GetObjectInput{
+		Bucket:                     aws.String(m.cfg.BucketName),
+		Key:                        aws.String(path),
+		ResponseContentDisposition: aws.String(fmt.Sprintf(`attachment; filename="%s"`, filename)),
+		ResponseContentType:        aws.String(mimeType),
+	})
+
+	return req.Presign(expires)
 }

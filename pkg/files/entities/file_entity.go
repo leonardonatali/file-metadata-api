@@ -1,6 +1,8 @@
 package entities
 
 import (
+	"fmt"
+	"strings"
 	"time"
 )
 
@@ -22,4 +24,12 @@ func (f *File) GetMetadataByKey(key string) *FilesMetadata {
 	}
 
 	return nil
+}
+
+func (f *File) GetQualifiedName() string {
+
+	path := strings.TrimPrefix(f.Path, "/")
+	path = strings.TrimSuffix(path, "/")
+
+	return fmt.Sprintf("/%d/%s/%d_%s", f.UserID, path, f.ID, f.Name)
 }

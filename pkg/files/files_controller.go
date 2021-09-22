@@ -1,7 +1,6 @@
 package files
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -99,16 +98,37 @@ func (c *FilesController) UploadFile(ctx *gin.Context) {
 
 	user := ctx.Request.Context().Value(auth.ContextUserKey).(*entities.User)
 	createFileDto.UserID = user.ID
+	createFileDto.Name = dto.GetFilename(createFileDto.File)
 
 	result, err := c.filesService.CreateFile(&createFileDto)
 	if err != nil {
-		log.Printf("cannot store the file: %s", err.Error())
+		log.Printf("cannot save the file: %s", err.Error())
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "cannot save the file"})
 		return
 	}
 
-	//Put file in storage
-	ctx.PureJSON(http.StatusCreated, result)
+	//Put file on storage
+	file, err := createFileDto.File.Open()
+	if err != nil {
+		log.Printf("cannot open the file: %s", err.Error())
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "cannot open the file"})
+		return
+	}
+
+	err = c.storageService.PutFile(
+		file,
+		result.GetQualifiedName(),
+		result.GetMetadataByKey("type").Value,
+		uint64(createFileDto.File.Size),
+	)
+
+	if err != nil {
+		log.Printf("cannot store the file: %s", err.Error())
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "cannot store the file"})
+		return
+	}
+
+	ctx.JSON(http.StatusCreated, result)
 }
 
 func (c *FilesController) DownloadFile(ctx *gin.Context) {
@@ -127,7 +147,7 @@ func (c *FilesController) DownloadFile(ctx *gin.Context) {
 	}
 
 	url, err := c.storageService.GetDownloadURL(
-		fmt.Sprintf("%s/%s", strings.TrimSuffix(file.Path, "/"), file.Name),
+		file.GetQualifiedName(),
 		file.Name,
 		file.GetMetadataByKey("type").Value,
 		time.Hour,
@@ -139,7 +159,7 @@ func (c *FilesController) DownloadFile(ctx *gin.Context) {
 		return
 	}
 
-	ctx.SecureJSON(http.StatusOK, dto.DownloadFileDtoResponse{DownloadURL: url})
+	ctx.PureJSON(http.StatusOK, dto.DownloadFileDtoResponse{DownloadURL: url})
 }
 
 func (c *FilesController) DeleteFile(ctx *gin.Context) {
@@ -167,6 +187,11 @@ func (c *FilesController) DeleteFile(ctx *gin.Context) {
 	}
 
 	// Delete file from storage
+	if err := c.storageService.DeleteFile(file.GetQualifiedName()); err != nil {
+		log.Printf("cannot delete file from storage: %s", err.Error())
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "cannot delete file from storage"})
+		return
+	}
 
 	ctx.Status(http.StatusOK)
 }
@@ -191,12 +216,22 @@ func (c *FilesController) UpdatePath(ctx *gin.Context) {
 		ctx.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": "file not found"})
 		return
 	}
+	src := file.GetQualifiedName()
 
 	updateFilePathDto.FileID = file.ID
 
 	if err := c.filesService.UpdateFilePath(updateFilePathDto); err != nil {
 		log.Printf("cannot change file path: %s", err.Error())
 		ctx.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": "cannot change file path"})
+		return
+	}
+
+	file.Path = updateFilePathDto.Path
+	dest := file.GetQualifiedName()
+
+	if err = c.storageService.Move(src, dest); err != nil {
+		log.Printf("cannot move file in storage: %s", err.Error())
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "cannot move file in storage"})
 		return
 	}
 }
@@ -238,6 +273,33 @@ func (c *FilesController) UpdateFile(ctx *gin.Context) {
 	if err := c.filesService.UpdateFile(updateFileDto); err != nil {
 		log.Printf("cannot replace file: %s", err.Error())
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "cannot replace file"})
+		return
+	}
+
+	if err := c.storageService.DeleteFile(file.GetQualifiedName()); err != nil {
+		log.Printf("cannot delete old file: %s", err.Error())
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "cannot delete old file"})
+		return
+	}
+
+	content, err := updateFileDto.File.Open()
+	if err != nil {
+		log.Printf("cannot read file contents: %s", err.Error())
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "cannot read file contents"})
+		return
+	}
+
+	err = c.storageService.PutFile(
+		content,
+		file.GetQualifiedName(),
+		file.GetMetadataByKey("type").Value,
+		uint64(updateFileDto.File.Size),
+	)
+
+	if err != nil {
+		log.Printf("cannot store file in storage: %s", err.Error())
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "cannot store file in storage"})
+		return
 	}
 }
 

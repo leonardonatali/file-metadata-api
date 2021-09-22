@@ -13,12 +13,12 @@ import (
 )
 
 type Config struct {
-	Port       int    `envconfig:"port" default:"80"`
-	DBPort     int    `envconfig:"db_port" default:"27018"`
-	DBHost     string `envconfig:"db_host" default:"database"`
-	DBUser     string `envconfig:"db_user" default:"root"`
-	DBName     string `envconfig:"db_name" default:"files"`
-	DBPassword string `envconfig:"db_password" default:"root"`
+	Port       int    `envconfig:"PORT" default:"80"`
+	DBPort     int    `envconfig:"DB_PORT" default:"27018"`
+	DBHost     string `envconfig:"DB_HOST" default:"database"`
+	DBUser     string `envconfig:"DB_USER" default:"root"`
+	DBName     string `envconfig:"DB_NAME" default:"files"`
+	DBPassword string `envconfig:"DB_PASSWORD" default:"root"`
 }
 
 func (c *Config) Load() error {

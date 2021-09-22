@@ -18,8 +18,8 @@ var serve = &cobra.Command{
 	Use:   "serve",
 	Short: "Inicia o servidor de gerenciamento de arquivos e metadados",
 	Run: func(cmd *cobra.Command, args []string) {
-		cfg := &config.Config{}
-		storageCfg := &storage.StorageConfig{}
+		cfg := config.Config{}
+		storageCfg := storage.StorageConfig{}
 
 		if err := cfg.Load(); err != nil {
 			log.Fatalf("cannot load app config: %s", err.Error())
@@ -29,7 +29,7 @@ var serve = &cobra.Command{
 			log.Fatalf("cannot load storage config: %s", err.Error())
 		}
 
-		srv := server.NewServer(cfg, storageCfg)
+		srv := server.NewServer(&cfg, &storageCfg)
 		srv.Run()
 
 		fmt.Println("servidor iniciando aqui...")

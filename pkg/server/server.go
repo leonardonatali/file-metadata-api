@@ -11,7 +11,7 @@ import (
 	"github.com/leonardonatali/file-metadata-api/pkg/database/migrations"
 	"github.com/leonardonatali/file-metadata-api/pkg/files"
 	"github.com/leonardonatali/file-metadata-api/pkg/storage"
-	minio "github.com/leonardonatali/file-metadata-api/pkg/storage/storage_minio"
+	"github.com/leonardonatali/file-metadata-api/pkg/storage/s3"
 	"github.com/leonardonatali/file-metadata-api/pkg/users"
 	"github.com/leonardonatali/file-metadata-api/pkg/users/repository/postgres"
 	"gorm.io/gorm"
@@ -33,11 +33,11 @@ func NewServer(cfg *config.Config, storageCfg *storage.StorageConfig) *Server {
 	router.MaxMultipartMemory = 10 * 1024 * 1024
 
 	//Carrega a configuração do storage
-	minioService := minio.MinioService{}
+	storage := s3.S3Service{}
 
 	return &Server{
 		cfg:        cfg,
-		storage:    &minioService,
+		storage:    &storage,
 		storageCfg: storageCfg,
 		router:     router,
 		db:         cfg.GetDBConn(),
@@ -62,12 +62,12 @@ func (s *Server) RegisterRoutes() {
 
 	exists, err := s.storage.BucketExists()
 	if err != nil {
-		log.Fatalf("cannot check if storage exists: %s", err.Error())
+		log.Fatalf("cannot check if bucket exists: %s", err.Error())
 	}
 
 	if !exists {
 		if err := s.storage.CreateBucket(); err != nil {
-			log.Fatalf("cannot check if storage exists: %s", err.Error())
+			log.Fatalf("cannot create bucket: %s", err.Error())
 		}
 	}
 

@@ -26,6 +26,7 @@ func (f *File) GetMetadataByKey(key string) *FilesMetadata {
 	return nil
 }
 
+// GetQualifiedName - Retorna o nome do arquivo para upload/download no storage
 func (f *File) GetQualifiedName() string {
 
 	path := strings.TrimPrefix(f.Path, "/")

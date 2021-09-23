@@ -266,7 +266,7 @@ func (c *FilesController) UpdateFile(ctx *gin.Context) {
 	}
 
 	//Extract metadata from file
-	updateFileDto.Metadata = dto.GetMetadata(updateFileDto.File, file.Path)
+	updateFileDto.Metadata = dto.GetMetadata(updateFileDto.File, updateFileDto.Path)
 	updateFileDto.OldFileID = file.ID
 	updateFileDto.UserID = user.ID
 

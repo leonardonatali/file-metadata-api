@@ -64,27 +64,35 @@ func (r *PostgresFilesRepository) UpdateFile(id uint64, path string, metadata []
 
 	model := &entities.File{ID: id}
 
-	if err := r.db.
-		Where("file_id = ?", id).
-		Delete(&entities.FilesMetadata{}).
-		Error; err != nil {
-		return err
-	}
+	err := r.db.Transaction(func(tx *gorm.DB) error {
 
-	if err := r.db.
-		Create(metadata).
-		Error; err != nil {
-		return err
-	}
+		// Deleta os metadados antigos
+		if err := tx.
+			Where("file_id = ?", id).
+			Delete(&entities.FilesMetadata{}).
+			Error; err != nil {
+			return err
+		}
 
-	if err := r.db.
-		Model(model).
-		Updates(&entities.File{Path: path}).
-		Error; err != nil {
-		return err
-	}
+		// Cria os novos metadados
+		if err := tx.
+			Create(metadata).
+			Error; err != nil {
+			return err
+		}
 
-	return nil
+		//Atualiza o arquivo
+		if err := tx.
+			Model(model).
+			Updates(&entities.File{Path: path}).
+			Error; err != nil {
+			return err
+		}
+
+		return nil
+	})
+
+	return err
 }
 
 func (r *PostgresFilesRepository) UpdateFilePath(fileID uint64, path string) error {
@@ -101,6 +109,7 @@ func (r *PostgresFilesRepository) DeleteFile(userID, fileID uint64) error {
 	}).Error
 }
 
+// Busca todos os metadados de um usuário
 func (r *PostgresFilesRepository) GetAllMetadata(userID uint64) ([]*entities.FilesMetadata, error) {
 	out := []*entities.FilesMetadata{}
 

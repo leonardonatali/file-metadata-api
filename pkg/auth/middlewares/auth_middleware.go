@@ -46,7 +46,9 @@ func GetAuthMiddleware(usersService *users.UsersService) func(c *gin.Context) {
 			})
 
 			if err != nil {
-				panic(err)
+				log.Printf("cannot creates user: %s", err.Error())
+				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "cannot create user"})
+				return
 			}
 		}
 

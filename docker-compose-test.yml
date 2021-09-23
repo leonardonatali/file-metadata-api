@@ -2,7 +2,7 @@ version: "3.8"
 services:
   api:
     build: .
-    env_file: .env
+    env_file: .test.env
     volumes:
       - $PWD/pkg:/app/pkg
       - $PWD/cmd:/app/cmd
@@ -17,10 +17,9 @@ services:
     command: ["realize", "start"]
 
   database:
-    image: postgres:13-alpine
-    env_file: .env
     build:
       context: database
+    env_file: .test.env
     ports:
       - "5433:${DB_PORT}"
     networks:
@@ -28,7 +27,7 @@ services:
 
   minio:
     image: minio/minio
-    env_file: .env
+    env_file: .test.env
     logging: 
       driver: none
     volumes:

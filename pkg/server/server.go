@@ -18,11 +18,11 @@ import (
 )
 
 type Server struct {
-	cfg        *config.Config
-	storage    storage.StorageService
-	storageCfg *storage.StorageConfig
-	router     *gin.Engine
-	db         *gorm.DB
+	Cfg        *config.Config
+	Storage    storage.StorageService
+	StorageCfg *storage.StorageConfig
+	Router     *gin.Engine
+	Db         *gorm.DB
 }
 
 func NewServer(cfg *config.Config, storageCfg *storage.StorageConfig) *Server {
@@ -36,45 +36,35 @@ func NewServer(cfg *config.Config, storageCfg *storage.StorageConfig) *Server {
 	storage := s3.S3Service{}
 
 	return &Server{
-		cfg:        cfg,
-		storage:    &storage,
-		storageCfg: storageCfg,
-		router:     router,
-		db:         cfg.GetDBConn(),
+		Cfg:        cfg,
+		Storage:    &storage,
+		StorageCfg: storageCfg,
+		Router:     router,
+		Db:         cfg.GetDBConn(),
 	}
 }
 
 func (s *Server) Run() {
+	s.Setup()
+	s.Listen()
+}
+
+func (s *Server) Setup() {
 	s.Migrate()
 	s.RegisterRoutes()
-	s.listen()
+	s.SetupStorage()
 }
 
 func (s *Server) Migrate() {
-	migrations.Migrate(s.cfg)
+	migrations.Migrate(s.Cfg)
 }
 
 func (s *Server) RegisterRoutes() {
 
-	if err := s.storage.Load(s.storageCfg); err != nil {
-		log.Fatalf("cannot load storage config: %s", err.Error())
-	}
+	usersService := users.NewUsersService(postgres.NewPostgresUsersRepository(s.Db))
+	filesController := files.NewFilesController(s.Cfg, s.Db, s.Storage)
 
-	exists, err := s.storage.BucketExists()
-	if err != nil {
-		log.Fatalf("cannot check if bucket exists: %s", err.Error())
-	}
-
-	if !exists {
-		if err := s.storage.CreateBucket(); err != nil {
-			log.Fatalf("cannot create bucket: %s", err.Error())
-		}
-	}
-
-	usersService := users.NewUsersService(postgres.NewPostgresUsersRepository(s.db))
-	filesController := files.NewFilesController(s.cfg, s.db, s.storage)
-
-	root := s.router.Group("/")
+	root := s.Router.Group("/")
 	root.Use(middlewares.GetAuthMiddleware(usersService))
 
 	root.GET("/ok", func(c *gin.Context) {
@@ -92,9 +82,26 @@ func (s *Server) RegisterRoutes() {
 	files.GET("/", filesController.GetAllFiles)
 }
 
-func (s *Server) listen() {
-	addr := fmt.Sprintf(":%d", s.cfg.Port)
+func (s *Server) SetupStorage() {
+	if err := s.Storage.Load(s.StorageCfg); err != nil {
+		log.Fatalf("cannot load storage config: %s", err.Error())
+	}
+
+	exists, err := s.Storage.BucketExists()
+	if err != nil {
+		log.Fatalf("cannot check if bucket exists: %s", err.Error())
+	}
+
+	if !exists {
+		if err := s.Storage.CreateBucket(); err != nil {
+			log.Fatalf("cannot create bucket: %s", err.Error())
+		}
+	}
+}
+
+func (s *Server) Listen() {
+	addr := fmt.Sprintf(":%d", s.Cfg.Port)
 
 	log.Printf("The server is running at %s", addr)
-	s.router.Run(addr)
+	s.Router.Run(addr)
 }

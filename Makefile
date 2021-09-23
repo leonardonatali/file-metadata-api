@@ -1,6 +1,10 @@
+default: run
 
-default: 
-	@docker-compose up --build
+run:
+	@docker-compose -f docker-compose.yml up --build
+
+test: 
+	@docker-compose -f docker-compose-test.yml run --rm api go test -v /app/pkg/test/...
 
 migrations:
 	@go-bindata \

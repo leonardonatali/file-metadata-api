@@ -2,23 +2,35 @@
 
 ### API de gerenciamento de arquivos e metadados
 ---
+### **Stack**
 
-Requisitos funcionais:
-- Permitir o upload de um arquivo (blob) com o metadado do caminho (Exemplo:
-arquivo `report.pdf` com o caminho `/hr/monthly`);
-- Permitir download do arquivo;
-- Deletar arquivo por ID;
-- Sobrescrever arquivo por ID.
-- Mudar caminho do arquivo por ID;
-- Listar arquivos disponíveis com seus metadados;
-- Listar arquivos abaixo de um caminho com seus metadados;
-- Ler metadados de um arquivo via ID;
-> Nesta especificação, um arquivo trata-se de qualquer blob e metadados contém o nome,
-caminho, tipo de arquivo, data de criação, data de atualização e tamanho.
+- Ambiente: [Docker](https://www.docker.com/);
+- Orquestração dos serviços: [Docker compose](https://docs.docker.com/compose/);
+- Imagem base: [Alpine Linux](https://www.alpinelinux.org/)
+- Linguagem: [Golang](https://golang.org/);
+- Framework web: [Gin](https://github.com/gin-gonic/gin)
+- Banco de dados: [Postgres](https://www.postgresql.org/);
+- Serviço de storage(compatível com o S3): [MinIO](https://min.io/);
+- Build helper: [Makefile](https://opensource.com/article/18/8/what-how-makefile)
 
-Requisitos não funcionais:
-- Limitar o tamanho máximo dos arquivos;
-- Criar endpoint para exibir a árvore de arquivos;
-- Armazenar arquivos em um serviço compatível com a API do AWS S3;
-- Subir o serviço em uma hospedagem pública e disponibilizar a URL;
-- Isolar arquivos por usuário.
+---
+
+### **Funcionalidades disponíveis:**
+- Upload de arquivos (blob) juntamente com seus respectivos metadados e caminho;
+- Isolamento de arquivos por contas de usuário
+- Limitação em 10MB no tamanho máximo das requisições;
+- Download do arquivo (Funcionalidade parcialmente funcional);
+    - Devido à configurações do MinIO, as chaves geradas na pré assinatura da URL são inválidas;
+- Exclusão de arquivos por ID;
+- Sobrescrita de arquivos(e seus metadados) por ID.
+- Alteração do _path_ por ID do arquivo;
+- Listagem de todos os arquivos de um usuário;
+- Exibição da árvore de arquivos;
+- Armazenamento em serviço de _storage_ compatível com o Amazon S3 (MinIO);
+- Listar arquivos abaixo de um caminho juntamente com os seus metadados;
+- Ler metadados de um arquivo pelo ID;
+
+> **Metadados**: nome, caminho, tipo de arquivo, data de criação, data de atualização e tamanho. 
+
+
+### **Inicialização da aplicação**

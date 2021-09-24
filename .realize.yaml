@@ -22,6 +22,3 @@ schema:
         - vendor
       extensions:
         - go
-#      scripts:
-#        - type: before
-#          command: go mod tidy

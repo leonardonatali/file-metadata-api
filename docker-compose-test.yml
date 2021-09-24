@@ -24,14 +24,16 @@ services:
       - "5433:${DB_PORT}"
     networks:
       - file-metadata-api
+    tmpfs:
+      - /var/lib/postgresql/data/pgdata
 
   minio:
     image: minio/minio
     env_file: .test.env
     logging: 
       driver: none
-    volumes:
-      - minio-data:/data
+    tmpfs:
+      - /data
     ports: 
       - 9000:9000
       - 9001:9001
@@ -41,6 +43,3 @@ services:
 
 networks:
   file-metadata-api:
-
-volumes:
-  minio-data:

@@ -231,12 +231,12 @@ func Test_Integration(t *testing.T) {
 		},
 		{
 			name:                    "Should return all files",
-			endpoint:                "/files/",
+			endpoint:                "/files",
 			method:                  http.MethodGet,
 			headers:                 getAuthHeader(),
 			form:                    map[string]io.Reader{},
 			expectedStatusCode:      http.StatusOK,
-			expectedResponseContent: "asdf",
+			expectedResponseContent: "",
 		},
 		{
 			name:                    "Should return 404 for not found product to delete",

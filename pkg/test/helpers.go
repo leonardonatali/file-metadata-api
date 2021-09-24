@@ -48,7 +48,7 @@ func CreateFile() {
 	ioutil.WriteFile(filename, []byte("this is a file!\n"), 0777)
 }
 
-func MustOpen() *os.File {
+func GetFile() *os.File {
 	f, _ := os.Open(filename)
 	return f
 }

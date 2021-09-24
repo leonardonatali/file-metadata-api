@@ -1,10 +1,12 @@
 package test
 
 import (
+	"bytes"
 	"io"
 	"log"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/gin-gonic/gin"
@@ -15,6 +17,8 @@ import (
 
 func Test_Integration(t *testing.T) {
 	cfg := &config.Config{}
+	cfg.Debug = false
+
 	storageCfg := &storage.StorageConfig{}
 
 	if err := cfg.Load(); err != nil {
@@ -26,92 +30,154 @@ func Test_Integration(t *testing.T) {
 	}
 
 	s := server.NewServer(cfg, storageCfg)
+	s.Db.Exec("DROP SCHEMA public CASCADE;")
+	s.Db.Exec("CREATE SCHEMA public;")
 	s.Setup()
+
+	//Cria o arquivo para upload
+	CreateFile()
 
 	tests := []struct {
 		name                    string
 		endpoint                string
+		headers                 http.Header
 		method                  string
-		requestBody             io.Reader
+		form                    map[string]io.Reader
 		expectedStatusCode      int
 		expectedResponseContent string
 	}{
 		{
-			name:                    "GET /ok",
+			name:                    "Should return 401 in GET /ok without token",
 			endpoint:                "/ok",
 			method:                  http.MethodGet,
-			requestBody:             nil,
-			expectedStatusCode:      100,
-			expectedResponseContent: "",
+			form:                    nil,
+			expectedStatusCode:      http.StatusUnauthorized,
+			expectedResponseContent: `{"error":"token must be provided"}`,
 		},
 		{
-			name:                    "GET /files/filetree",
-			endpoint:                "/files/filetree",
+			name:                    "Should return 200 in GET /ok with token",
+			endpoint:                "/ok",
 			method:                  http.MethodGet,
-			requestBody:             nil,
-			expectedStatusCode:      100,
-			expectedResponseContent: "",
+			form:                    nil,
+			headers:                 getAuthHeader(),
+			expectedStatusCode:      http.StatusOK,
+			expectedResponseContent: `:)`,
 		},
 		{
-			name:                    "POST /files/upload",
+			name:                    "Should fails at validation request type in upload file",
 			endpoint:                "/files/upload",
 			method:                  http.MethodPost,
-			requestBody:             nil,
-			expectedStatusCode:      100,
-			expectedResponseContent: "",
+			headers:                 getAuthHeader(),
+			form:                    nil,
+			expectedStatusCode:      http.StatusUnprocessableEntity,
+			expectedResponseContent: `{"error":"the request input must be multipStatusBadRequestart/form"}`,
 		},
 		{
-			name:                    "GET /files/:id/download",
-			endpoint:                "/files/:id/download",
-			method:                  http.MethodGet,
-			requestBody:             nil,
-			expectedStatusCode:      100,
-			expectedResponseContent: "",
+			name:                    "Should fails at validation path form param in upload file",
+			endpoint:                "/files/upload",
+			method:                  http.MethodPost,
+			headers:                 getAuthHeader(),
+			form:                    map[string]io.Reader{"type": strings.NewReader("test")},
+			expectedStatusCode:      http.StatusBadRequest,
+			expectedResponseContent: `{"error":"Key: 'CreateFileDto.Path' Error:Field validation for 'Path' failed on the 'required' tag\nKey: 'CreateFileDto.File' Error:Field validation for 'File' failed on the 'required' tag"}`,
 		},
 		{
-			name:                    "GET /files/:id/metadata",
-			endpoint:                "/files/:id/metadata",
-			method:                  http.MethodGet,
-			requestBody:             nil,
-			expectedStatusCode:      100,
-			expectedResponseContent: "",
+			name:                    "Should fails at validation file form param in upload file",
+			endpoint:                "/files/upload",
+			method:                  http.MethodPost,
+			headers:                 getAuthHeader(),
+			form:                    map[string]io.Reader{"Path": strings.NewReader("/path/test")},
+			expectedStatusCode:      http.StatusBadRequest,
+			expectedResponseContent: `{"error":"Key: 'CreateFileDto.File' Error:Field validation for 'File' failed on the 'required' tag"}`,
 		},
 		{
-			name:                    "DELETE /files/:id",
-			endpoint:                "/files/:id",
-			method:                  http.MethodDelete,
-			requestBody:             nil,
-			expectedStatusCode:      100,
-			expectedResponseContent: "",
+			name:     "Should upload file",
+			endpoint: "/files/upload",
+			method:   http.MethodPost,
+			headers:  getAuthHeader(),
+			form: map[string]io.Reader{
+				"Path": strings.NewReader("/path/test"),
+				"File": MustOpen(),
+			},
+			expectedStatusCode:      http.StatusCreated,
+			expectedResponseContent: ``,
 		},
-		{
-			name:                    "PATCH /files/:id",
-			endpoint:                "/files/:id",
-			method:                  http.MethodPatch,
-			requestBody:             nil,
-			expectedStatusCode:      100,
-			expectedResponseContent: "",
-		},
-		{
-			name:                    "PUT /files/:id",
-			endpoint:                "/files/:id",
-			method:                  http.MethodPut,
-			requestBody:             nil,
-			expectedStatusCode:      100,
-			expectedResponseContent: "",
-		},
-		{
-			name:                    "GET /files/",
-			endpoint:                "/files",
-			method:                  http.MethodGet,
-			requestBody:             nil,
-			expectedStatusCode:      100,
-			expectedResponseContent: "",
-		},
+		//{
+		//	name:                    "GET /files/filetree",
+		//	endpoint:                "/files/filetree",
+		//	method:                  http.MethodGet,
+		//	form:             map[string]io.Reader{},
+		//	expectedStatusCode:      100,
+		//	expectedResponseContent: "",
+		//},
+		//{
+		//	name:                    "GET /files/:id/download",
+		//	endpoint:                "/files/:id/download",
+		//	method:                  http.MethodGet,
+		//	form:             map[string]io.Reader{},
+		//	expectedStatusCode:      100,
+		//	expectedResponseContent: "",
+		//},
+		//{
+		//	name:                    "GET /files/:id/metadata",
+		//	endpoint:                "/files/:id/metadata",
+		//	method:                  http.MethodGet,
+		//	form:             map[string]io.Reader{},
+		//	expectedStatusCode:      100,
+		//	expectedResponseContent: "",
+		//},
+		//{
+		//	name:                    "DELETE /files/:id",
+		//	endpoint:                "/files/:id",
+		//	method:                  http.MethodDelete,
+		//	form:             map[string]io.Reader{},
+		//	expectedStatusCode:      100,
+		//	expectedResponseContent: "",
+		//},
+		//{
+		//	name:                    "PATCH /files/:id",
+		//	endpoint:                "/files/:id",
+		//	method:                  http.MethodPatch,
+		//	form:             map[string]io.Reader{},
+		//	expectedStatusCode:      100,
+		//	expectedResponseContent: "",
+		//},
+		//{
+		//	name:                    "PUT /files/:id",
+		//	endpoint:                "/files/:id",
+		//	method:                  http.MethodPut,
+		//	form:             map[string]io.Reader{},
+		//	expectedStatusCode:      100,
+		//	expectedResponseContent: "",
+		//},
+		//{
+		//	name:                    "GET /files/",
+		//	endpoint:                "/files",
+		//	method:                  http.MethodGet,
+		//	form:             map[string]io.Reader{},
+		//	expectedStatusCode:      100,
+		//	expectedResponseContent: "",
+		//},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			req, _ := http.NewRequest(tt.method, tt.endpoint, tt.requestBody)
+
+			content := &bytes.Buffer{}
+			contentType := ""
+
+			if len(tt.form) > 0 {
+				content, contentType, _ = FormData(tt.form)
+			}
+
+			req, _ := http.NewRequest(tt.method, tt.endpoint, content)
+
+			if len(tt.headers) > 0 {
+				req.Header = tt.headers.Clone()
+			}
+
+			if contentType != "" {
+				req.Header.Set("Content-Type", contentType)
+			}
 
 			testHTTPResponse(t, s.Router, req, func(w *httptest.ResponseRecorder) {
 
@@ -119,20 +185,26 @@ func Test_Integration(t *testing.T) {
 				content, err := io.ReadAll(w.Body)
 
 				if err != nil {
-					t.Errorf("IntegrationTests(%s)\n%s %s\nError: %s", tt.method, tt.endpoint, tt.name, err.Error())
+					t.Errorf("IntegrationTests\n%s\nError: %s", tt.name, err.Error())
 				}
 
 				if !statusIsOk {
-					t.Errorf("IntegrationTests(%s)\n%s %s\nStatus is not ok: expected %d, received %d", tt.method, tt.endpoint, tt.name, tt.expectedStatusCode, w.Code)
+					t.Errorf("IntegrationTests\n%s\nStatus is not ok: expected %d, received %d", tt.name, tt.expectedStatusCode, w.Code)
 				}
 
 				if string(content) != tt.expectedResponseContent {
-					t.Errorf("IntegrationTests(%s)\n%s %s\nresponseis not ok: \nexpected %s\nreceived %s", tt.method, tt.endpoint, tt.name, tt.expectedResponseContent, string(content))
+					t.Errorf("IntegrationTests\n%s\nResponse is not ok: \nexpected %s\nreceived %s", tt.name, tt.expectedResponseContent, string(content))
 				}
 			})
 
 		})
 	}
+}
+
+func getAuthHeader() http.Header {
+	header := http.Header{}
+	header.Set("token", "123")
+	return header
 }
 
 func testHTTPResponse(t *testing.T, r *gin.Engine, req *http.Request, f func(w *httptest.ResponseRecorder)) {

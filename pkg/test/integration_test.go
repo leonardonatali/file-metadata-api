@@ -102,30 +102,51 @@ func Test_Integration(t *testing.T) {
 			expectedStatusCode:      http.StatusCreated,
 			expectedResponseContent: ``,
 		},
-		//{
-		//	name:                    "GET /files/filetree",
-		//	endpoint:                "/files/filetree",
-		//	method:                  http.MethodGet,
-		//	form:             map[string]io.Reader{},
-		//	expectedStatusCode:      100,
-		//	expectedResponseContent: "",
-		//},
-		//{
-		//	name:                    "GET /files/:id/download",
-		//	endpoint:                "/files/:id/download",
-		//	method:                  http.MethodGet,
-		//	form:             map[string]io.Reader{},
-		//	expectedStatusCode:      100,
-		//	expectedResponseContent: "",
-		//},
-		//{
-		//	name:                    "GET /files/:id/metadata",
-		//	endpoint:                "/files/:id/metadata",
-		//	method:                  http.MethodGet,
-		//	form:             map[string]io.Reader{},
-		//	expectedStatusCode:      100,
-		//	expectedResponseContent: "",
-		//},
+		{
+			name:                    "Should return a correct file tree",
+			endpoint:                "/files/filetree",
+			method:                  http.MethodGet,
+			headers:                 getAuthHeader(),
+			form:                    map[string]io.Reader{},
+			expectedStatusCode:      http.StatusOK,
+			expectedResponseContent: `[{"CurrentDir":"","Children":[{"CurrentDir":"path","Children":[{"CurrentDir":"test"}]}]}]`,
+		},
+		{
+			name:                    "Should return 404 for non existing file",
+			endpoint:                "/files/999/download",
+			method:                  http.MethodGet,
+			headers:                 getAuthHeader(),
+			form:                    map[string]io.Reader{},
+			expectedStatusCode:      http.StatusNotFound,
+			expectedResponseContent: `{"error":"file not found"}`,
+		},
+		{
+			name:               "Should return correct download link",
+			endpoint:           "/files/1/download",
+			method:             http.MethodGet,
+			headers:            getAuthHeader(),
+			form:               map[string]io.Reader{},
+			expectedStatusCode: http.StatusOK,
+			//expectedResponseContent: `{"DownloadURL":"http://minio:9000/app-files-test/1/path/test/1_file.txt?"}`,
+		},
+		{
+			name:                    "Should return 404 for metadata of not found file",
+			endpoint:                "/files/999/metadata",
+			method:                  http.MethodGet,
+			headers:                 getAuthHeader(),
+			form:                    map[string]io.Reader{},
+			expectedStatusCode:      http.StatusNotFound,
+			expectedResponseContent: `{"error":"file not found"}`,
+		},
+		{
+			name:                    "Should return file metadata",
+			endpoint:                "/files/1/metadata",
+			method:                  http.MethodGet,
+			headers:                 getAuthHeader(),
+			form:                    map[string]io.Reader{},
+			expectedStatusCode:      http.StatusOK,
+			expectedResponseContent: `[{"ID":1,"File":null,"FileID":1,"Key":"filename","Value":"file.txt"},{"ID":2,"File":null,"FileID":1,"Key":"path","Value":"/path/test"},{"ID":3,"File":null,"FileID":1,"Key":"size","Value":"16"},{"ID":4,"File":null,"FileID":1,"Key":"type","Value":"application/octet-stream"}]`,
+		},
 		//{
 		//	name:                    "DELETE /files/:id",
 		//	endpoint:                "/files/:id",
@@ -192,7 +213,7 @@ func Test_Integration(t *testing.T) {
 					t.Errorf("IntegrationTests\n%s\nStatus is not ok: expected %d, received %d", tt.name, tt.expectedStatusCode, w.Code)
 				}
 
-				if tt.expectedResponseContent != "" && string(content) != tt.expectedResponseContent {
+				if tt.expectedResponseContent != "" && strings.TrimSpace(string(content)) != strings.TrimSpace(tt.expectedResponseContent) {
 					t.Errorf("IntegrationTests\n%s\nResponse is not ok: \nexpected %s\nreceived %s", tt.name, tt.expectedResponseContent, string(content))
 				}
 			})

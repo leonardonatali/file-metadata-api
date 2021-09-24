@@ -1,11 +1,11 @@
-PUT http://localhost:8088/files/9
+PUT http://localhost:8088/files/1
 token: 123
 Content-Type: multipart/form-data; boundary=--form-boundary
 
 ----form-boundary
 Content-Disposition: form-data; name="Path"
 
-path/of/file/update/full
+path/of/file/updated/full
 ----form-boundary
 Content-Disposition: form-data; name="File"; filename="profile.jpg"
 Content-Type: image/jpeg

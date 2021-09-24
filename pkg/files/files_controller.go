@@ -173,7 +173,7 @@ func (c *FilesController) DeleteFile(ctx *gin.Context) {
 
 	file, err := c.filesService.GetFile(fileId, user.ID)
 	if err != nil || file == nil {
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "file not found"})
+		ctx.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": "file not found"})
 		return
 	}
 

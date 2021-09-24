@@ -13,6 +13,7 @@ import (
 )
 
 type Config struct {
+	Debug      bool   `envconfig:"DEBUG" default:"true"`
 	Port       int    `envconfig:"PORT" default:"80"`
 	DBPort     int    `envconfig:"DB_PORT" default:"27018"`
 	DBHost     string `envconfig:"DB_HOST" default:"database"`
@@ -38,8 +39,10 @@ func (c *Config) GetDatabaseDSN(direct bool) string {
 }
 
 func (c *Config) GetDBConn() *gorm.DB {
-	db, err := gorm.Open(postgres.Open(c.GetDatabaseDSN(false)), &gorm.Config{
-		Logger: logger.New(
+	cfg := &gorm.Config{}
+
+	if c.Debug {
+		cfg.Logger = logger.New(
 			log.New(os.Stdout, "\r\n", log.LstdFlags),
 			logger.Config{
 				SlowThreshold:             time.Second,
@@ -47,8 +50,10 @@ func (c *Config) GetDBConn() *gorm.DB {
 				IgnoreRecordNotFoundError: false,
 				Colorful:                  true,
 			},
-		),
-	})
+		)
+	}
+
+	db, err := gorm.Open(postgres.Open(c.GetDatabaseDSN(false)), cfg)
 
 	if err != nil {
 		panic(err)

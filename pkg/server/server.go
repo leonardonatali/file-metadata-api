@@ -26,12 +26,6 @@ type Server struct {
 }
 
 func NewServer(cfg *config.Config, storageCfg *storage.StorageConfig) *Server {
-	gin.SetMode(gin.ReleaseMode)
-	router := gin.Default()
-
-	//Define o tamanho máximo aceito pelo form em 10MB
-	router.MaxMultipartMemory = 10 * 1024 * 1024
-
 	//Carrega a configuração do storage
 	storage := s3.S3Service{}
 
@@ -39,7 +33,6 @@ func NewServer(cfg *config.Config, storageCfg *storage.StorageConfig) *Server {
 		Cfg:        cfg,
 		Storage:    &storage,
 		StorageCfg: storageCfg,
-		Router:     router,
 		Db:         cfg.GetDBConn(),
 	}
 }
@@ -51,12 +44,26 @@ func (s *Server) Run() {
 
 func (s *Server) Setup() {
 	s.Migrate()
+	s.SetupRouter()
 	s.RegisterRoutes()
 	s.SetupStorage()
 }
 
 func (s *Server) Migrate() {
 	migrations.Migrate(s.Cfg)
+}
+
+func (s *Server) SetupRouter() {
+	gin.SetMode(gin.ReleaseMode)
+	if s.Cfg.Debug {
+		s.Router = gin.Default()
+	} else {
+		s.Router = gin.New()
+	}
+
+	//Define o tamanho máximo aceito pelo form em 10MB
+	s.Router.MaxMultipartMemory = 10 * 1024 * 1024
+
 }
 
 func (s *Server) RegisterRoutes() {

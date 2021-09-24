@@ -86,7 +86,7 @@ func (s *Server) RegisterRoutes() {
 	files.DELETE("/:id", filesController.DeleteFile)
 	files.PATCH("/:id", filesController.UpdatePath)
 	files.PUT("/:id", filesController.UpdateFile)
-	files.GET("/", filesController.GetAllFiles)
+	files.GET("", filesController.GetAllFiles)
 }
 
 func (s *Server) SetupStorage() {

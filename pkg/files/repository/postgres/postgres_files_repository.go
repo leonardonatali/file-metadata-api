@@ -1,6 +1,8 @@
 package postgres
 
 import (
+	"errors"
+
 	"github.com/leonardonatali/file-metadata-api/pkg/files/entities"
 	"gorm.io/gorm"
 )
@@ -45,6 +47,9 @@ func (r *PostgresFilesRepository) GetFile(fileID, userID uint64) (*entities.File
 	}
 
 	if err := query.Preload("Metadata").First(&file).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
 		return nil, err
 	}
 

@@ -70,7 +70,7 @@ func Test_Integration(t *testing.T) {
 			headers:                 getAuthHeader(),
 			form:                    nil,
 			expectedStatusCode:      http.StatusUnprocessableEntity,
-			expectedResponseContent: `{"error":"the request input must be multipStatusBadRequestart/form"}`,
+			expectedResponseContent: `{"error":"the request input must be multipart/form"}`,
 		},
 		{
 			name:                    "Should fails at validation path form param in upload file",
@@ -192,7 +192,7 @@ func Test_Integration(t *testing.T) {
 					t.Errorf("IntegrationTests\n%s\nStatus is not ok: expected %d, received %d", tt.name, tt.expectedStatusCode, w.Code)
 				}
 
-				if string(content) != tt.expectedResponseContent {
+				if tt.expectedResponseContent != "" && string(content) != tt.expectedResponseContent {
 					t.Errorf("IntegrationTests\n%s\nResponse is not ok: \nexpected %s\nreceived %s", tt.name, tt.expectedResponseContent, string(content))
 				}
 			})
